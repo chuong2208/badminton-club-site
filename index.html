@@ -5,87 +5,219 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Badminton Club Sessions</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom styles for better aesthetics and responsiveness */
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    input[type="password"] {
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid #d1d5db; /* Light gray border */
+      width: 100%; /* Full width within its container */
+      max-width: 24rem; /* Max width for consistency */
+      box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    }
+    button {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      transition: background-color 0.2s ease-in-out;
+    }
+    .bg-blue-600:hover {
+      background-color: #2563eb; /* Darker blue on hover */
+    }
+    .bg-green-600:hover {
+      background-color: #16a34a; /* Darker green on hover */
+    }
+    /* Responsive adjustments for the session list grid */
+    @media (min-width: 640px) {
+      #session-list {
+        grid-template-columns: repeat(2, 1fr); /* Two columns on small screens and up */
+      }
+    }
+    @media (min-width: 768px) {
+      #session-list {
+        grid-template-columns: repeat(3, 1fr); /* Three columns on medium screens and up */
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
-  <div class="max-w-3xl mx-auto p-6">
-    <h1 class="text-3xl font-bold text-center mb-6">Badminton Club Sessions</h1>
+<body class="bg-gray-100 text-gray-800 p-4 sm:p-6">
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+    <h1 class="text-3xl font-bold text-center mb-6 text-blue-700">Badminton Club Sessions</h1>
 
-    <div id="session-list" class="grid gap-4 mb-8"></div>
-
-    <hr class="my-8">
-
-    <div id="admin-login" class="mb-6">
-      <h2 class="text-xl font-semibold mb-2">Admin Panel</h2>
-      <input type="password" id="admin-password" placeholder="Enter admin password"
-             class="border p-2 rounded w-full max-w-sm mb-2">
-      <button onclick="checkPassword()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-        Login
-      </button>
+    <div id="message-box" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg shadow-xl text-center max-w-sm w-full">
+        <p id="message-content" class="text-lg font-semibold mb-4"></p>
+        <button onclick="hideMessageBox()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
+          OK
+        </button>
+      </div>
     </div>
 
-    <div id="admin-panel" class="hidden">
-      <h3 class="text-lg font-semibold mb-2">Add New Session</h3>
-      <input id="session-date" type="date" class="border p-2 rounded mb-2 block w-full max-w-sm">
-      <input id="session-time" type="time" class="border p-2 rounded mb-2 block w-full max-w-sm">
-      <input id="session-fee" type="number" placeholder="Fee (VND)" class="border p-2 rounded mb-2 block w-full max-w-sm">
-      <input id="session-capacity" type="number" placeholder="Capacity" class="border p-2 rounded mb-2 block w-full max-w-sm">
-      <button onclick="addSession()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+    <h2 class="text-2xl font-semibold mb-4 text-gray-700">Upcoming Sessions</h2>
+    <div id="session-list" class="grid grid-cols-1 gap-4 mb-8">
+      </div>
+
+    <hr class="my-8 border-t-2 border-gray-200">
+
+    <div id="admin-login" class="mb-6 bg-gray-50 p-5 rounded-lg shadow-inner">
+      <h2 class="text-xl font-semibold mb-3 text-gray-700">Admin Panel Login</h2>
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <input type="password" id="admin-password" placeholder="Enter admin password"
+               class="border p-2 rounded-md flex-grow focus:ring-blue-500 focus:border-blue-500">
+        <button onclick="checkPassword()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md shadow-md">
+          Login
+        </button>
+      </div>
+    </div>
+
+    <div id="admin-panel" class="hidden bg-gray-50 p-5 rounded-lg shadow-inner">
+      <h3 class="text-lg font-semibold mb-3 text-gray-700">Add New Session</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <input id="session-date" type="date" class="border p-2 rounded-md focus:ring-blue-500 focus:border-blue-500">
+        <input id="session-time" type="time" class="border p-2 rounded-md focus:ring-blue-500 focus:border-blue-500">
+        <input id="session-fee" type="number" placeholder="Fee (VND)" class="border p-2 rounded-md focus:ring-blue-500 focus:border-blue-500">
+        <input id="session-capacity" type="number" placeholder="Capacity" class="border p-2 rounded-md focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      <button onclick="addSession()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md shadow-md">
         Save Session
       </button>
     </div>
   </div>
 
   <script>
-    const supabaseUrl = 'https://wxyvwvlqxdojjyjocxew.supabase.co';
-    const supabaseKey = process.env.SUPABASE_KEY';
-    const ADMIN_PASSWORD = 'badminton2024';
+    // Supabase configuration - Replace with your actual project URL and public key
+    // NOTE: In a real application, consider more secure ways to handle API keys,
+    //       especially for write operations. This is for demonstration purposes.
+    const SUPABASE_URL = 'https://wxyvwvlqxdojjyjocxew.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4eXZ3dmxxeGRvamp5am9jeGV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2Njg2OTgsImV4cCI6MjA2NDI0NDY5OH0.M3wQm2LWcw3aHCl-kAMz-eBg30v2s78SkgAsBl6-5Jw'; // Replace with your actual Supabase Anon Key
+    const ADMIN_PASSWORD = 'badminton2024'; // Simple admin password for this example
 
-    async function fetchSessions() {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/sessions?select=*`, {
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-        }
-      });
-      const sessions = await res.json();
-      const container = document.getElementById('session-list');
-      container.innerHTML = '';
-      sessions.forEach(s => {
-        const div = document.createElement('div');
-        div.className = 'bg-white p-4 rounded shadow';
-        div.innerHTML = `<strong>${s.date} - ${s.time}</strong><br>Fee: VND ${s.fee}<br>Capacity: ${s.capacity}`;
-        container.appendChild(div);
-      });
+    /**
+     * Displays a custom message box instead of `alert()`.
+     * @param {string} message - The message to display.
+     */
+    function showMessageBox(message) {
+      document.getElementById('message-content').textContent = message;
+      document.getElementById('message-box').classList.remove('hidden');
     }
 
+    /**
+     * Hides the custom message box.
+     */
+    function hideMessageBox() {
+      document.getElementById('message-box').classList.add('hidden');
+    }
+
+    /**
+     * Fetches session data from Supabase and displays it on the page.
+     */
+    async function fetchSessions() {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/sessions?select=*`, {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const sessions = await res.json();
+        const container = document.getElementById('session-list');
+        container.innerHTML = ''; // Clear existing sessions
+
+        if (sessions.length === 0) {
+          container.innerHTML = '<p class="text-center text-gray-500 col-span-full">No sessions available. Check back later!</p>';
+        } else {
+          // Sort sessions by date and then time for better readability
+          sessions.sort((a, b) => {
+            const dateTimeA = new Date(`${a.date}T${a.time}`);
+            const dateTimeB = new Date(`${b.date}T${b.time}`);
+            return dateTimeA - dateTimeB;
+          });
+
+          sessions.forEach(s => {
+            const div = document.createElement('div');
+            div.className = 'bg-white p-4 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200';
+            div.innerHTML = `
+              <p class="text-lg font-semibold text-blue-800">${s.date} - ${s.time}</p>
+              <p class="text-gray-600">Fee: <span class="font-bold text-green-600">VND ${s.fee.toLocaleString()}</span></p>
+              <p class="text-gray-600">Capacity: <span class="font-bold">${s.capacity}</span> players</p>
+            `;
+            container.appendChild(div);
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching sessions:", error);
+        showMessageBox("Failed to load sessions. Please try again later.");
+      }
+    }
+
+    /**
+     * Checks the entered password for admin access.
+     */
     function checkPassword() {
       const input = document.getElementById('admin-password').value;
       if (input === ADMIN_PASSWORD) {
         document.getElementById('admin-panel').classList.remove('hidden');
+        document.getElementById('admin-login').classList.add('hidden'); // Hide login after successful login
+        showMessageBox('Admin panel unlocked!');
       } else {
-        alert('Wrong password.');
+        showMessageBox('Wrong password. Please try again.');
       }
     }
 
+    /**
+     * Adds a new session to Supabase.
+     */
     async function addSession() {
       const date = document.getElementById('session-date').value;
       const time = document.getElementById('session-time').value;
       const fee = parseInt(document.getElementById('session-fee').value);
       const capacity = parseInt(document.getElementById('session-capacity').value);
 
-      await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ date, time, fee, capacity })
-      });
-      alert('Session added!');
-      fetchSessions();
+      // Basic validation
+      if (!date || !time || isNaN(fee) || isNaN(capacity) || fee <= 0 || capacity <= 0) {
+        showMessageBox('Please fill in all session details correctly. Fee and Capacity must be positive numbers.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ date, time, fee, capacity })
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(`Failed to add session: ${errorData.message || res.statusText}`);
+        }
+
+        showMessageBox('Session added successfully!');
+        // Clear form fields after successful submission
+        document.getElementById('session-date').value = '';
+        document.getElementById('session-time').value = '';
+        document.getElementById('session-fee').value = '';
+        document.getElementById('session-capacity').value = '';
+        fetchSessions(); // Refresh the session list
+      } catch (error) {
+        console.error("Error adding session:", error);
+        showMessageBox(`Error adding session: ${error.message}`);
+      }
     }
 
+    // Initialize the application by fetching sessions when the page loads
     fetchSessions();
   </script>
 </body>
