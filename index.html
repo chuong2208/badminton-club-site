@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Badminton Club Sessions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <div class="max-w-3xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Badminton Club Sessions</h1>
+
+    <div id="session-list" class="grid gap-4 mb-8"></div>
+
+    <hr class="my-8">
+
+    <div id="admin-login" class="mb-6">
+      <h2 class="text-xl font-semibold mb-2">Admin Panel</h2>
+      <input type="password" id="admin-password" placeholder="Enter admin password"
+             class="border p-2 rounded w-full max-w-sm mb-2">
+      <button onclick="checkPassword()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+        Login
+      </button>
+    </div>
+
+    <div id="admin-panel" class="hidden">
+      <h3 class="text-lg font-semibold mb-2">Add New Session</h3>
+      <input id="session-date" type="date" class="border p-2 rounded mb-2 block w-full max-w-sm">
+      <input id="session-time" type="time" class="border p-2 rounded mb-2 block w-full max-w-sm">
+      <input id="session-fee" type="number" placeholder="Fee (VND)" class="border p-2 rounded mb-2 block w-full max-w-sm">
+      <input id="session-capacity" type="number" placeholder="Capacity" class="border p-2 rounded mb-2 block w-full max-w-sm">
+      <button onclick="addSession()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+        Save Session
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const supabaseUrl = 'https://wxyvwvlqxdojjyjocxew.supabase.co';
+    const supabaseKey = process.env.SUPABASE_KEY';
+    const ADMIN_PASSWORD = 'badminton2024';
+
+    async function fetchSessions() {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/sessions?select=*`, {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      });
+      const sessions = await res.json();
+      const container = document.getElementById('session-list');
+      container.innerHTML = '';
+      sessions.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'bg-white p-4 rounded shadow';
+        div.innerHTML = `<strong>${s.date} - ${s.time}</strong><br>Fee: VND ${s.fee}<br>Capacity: ${s.capacity}`;
+        container.appendChild(div);
+      });
+    }
+
+    function checkPassword() {
+      const input = document.getElementById('admin-password').value;
+      if (input === ADMIN_PASSWORD) {
+        document.getElementById('admin-panel').classList.remove('hidden');
+      } else {
+        alert('Wrong password.');
+      }
+    }
+
+    async function addSession() {
+      const date = document.getElementById('session-date').value;
+      const time = document.getElementById('session-time').value;
+      const fee = parseInt(document.getElementById('session-fee').value);
+      const capacity = parseInt(document.getElementById('session-capacity').value);
+
+      await fetch(`${SUPABASE_URL}/rest/v1/sessions`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ date, time, fee, capacity })
+      });
+      alert('Session added!');
+      fetchSessions();
+    }
+
+    fetchSessions();
+  </script>
+</body>
+</html>
